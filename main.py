@@ -1,6 +1,39 @@
 import pandas as pd
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
-df = pd.read_csv("customers.csv")
+df = None
 
-print(df.head())
+app = tk.Tk()
+
+app.title("Data Analyzer App")
+app.geometry("600x400")
+
+def load_file():
+    global df
+
+    path = filedialog.askopenfilename()
+
+    if not path:
+        return
+    
+    try:
+        if path.endswith(".csv"):
+            df = pd.read_csv(path)
+        elif path.endswith(".xlsx"):
+            df = pdf.read_excel(path)
+        else:
+            messagebox.showerror("Error", "Incorrect file format")
+            return
+        
+        messagebox.showinfo("Ok", "The file has been loaded")
+
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+btn_load = tk.Button(app, text="Load file", command=load_file)
+btn_load.pack()
+
+app.mainloop()
+
 
