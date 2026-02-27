@@ -1,5 +1,6 @@
 import pandas as pd
 import tkinter as tk
+import os
 from tkinter import filedialog, messagebox, ttk
 
 # -------- GLOBAL --------
@@ -11,15 +12,24 @@ result_df = None
 app = tk.Tk()
 app.title("Data Analyzer App")
 app.geometry("650x600")
+app.configure(bg="#2b2b2b")
+
+style = ttk.Style()
+style.theme_use("default")
+
+style.configure("TLabel", background="#2b2b2b", foreground="white")
+style.configure("TFrame", background="#2b2b2b")
+style.configure("TLabelframe", background="#2b2b2b", foreground="white")
+style.configure("TLabelframe.Label", background="#2b2b2b", foreground="white")
+style.configure("TButton", padding=6)
+style.configure("TCombobox", padding=5)
 
 # -------- FUNKCJE --------
 
-# -------- LOAD FILE 1 --------
 def load_file():
     global df, result_df
 
     path = filedialog.askopenfilename()
-
     if not path:
         return
 
@@ -33,13 +43,13 @@ def load_file():
             return
 
         result_df = None
-
         cols = list(df.columns)
 
         combo_index['values'] = cols
         combo_columns['values'] = cols
         combo_values['values'] = cols
-        combo_analyze['values'] = cols
+        numeric_cols = df.select_dtypes(include='number').columns.tolist()
+        combo_analyze['values'] = numeric_cols
         combo_merge_left['values'] = cols
 
         app.title(f"Data Analyzer - {path}")
@@ -48,14 +58,12 @@ def load_file():
 
     except Exception as e:
         messagebox.showerror("Error", str(e))
+    label_file1.config(text=f"File 1: {os.path.basename(path)}")
 
-
-# -------- LOAD FILE 2 --------
 def load_file2():
     global df2
 
     path = filedialog.askopenfilename()
-
     if not path:
         return
 
@@ -68,31 +76,24 @@ def load_file2():
             messagebox.showerror("Error", "Incorrect file format")
             return
 
-        cols = list(df2.columns)
-        combo_merge_right['values'] = cols
+        combo_merge_right['values'] = list(df2.columns)
 
         messagebox.showinfo("OK", "File 2 loaded")
 
     except Exception as e:
         messagebox.showerror("Error", str(e))
+    label_file2.config(text=f"File 2: {os.path.basename(path)}")
 
-
-# -------- SHOW DATA --------
 def show_data():
-    global df
-
     if df is None:
         messagebox.showerror("Error", "No data")
         return
 
     text.delete(1.0, tk.END)
-    text.insert(tk.END, df.head().to_string())
+    text.insert(tk.END, df.to_string())
 
 
-# -------- SHOW COLUMNS --------
 def show_columns():
-    global df
-
     if df is None:
         messagebox.showerror("Error", "No data")
         return
@@ -100,17 +101,16 @@ def show_columns():
     messagebox.showinfo("Columns", "\n".join(df.columns))
 
 
-# -------- PIVOT --------
 def make_pivot():
-    global df, result_df
+    global result_df
 
     if df is None:
         messagebox.showerror("Error", "No data")
         return
 
-    index = combo_index.get().strip()
-    columns = combo_columns.get().strip()
-    values = combo_values.get().strip()
+    index = combo_index.get()
+    columns = combo_columns.get()
+    values = combo_values.get()
     agg = combo_agg.get()
 
     if not index or not columns or not values:
@@ -127,21 +127,20 @@ def make_pivot():
         )
 
         text.delete(1.0, tk.END)
-        text.insert(tk.END, result_df.to_string())
-
+        text.insert(tk.END, f"Rows: {len(result_df)}\n\n")
+        text.insert(tk.END, result_df.head(20).to_string())
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
 
-# -------- ANALYZE --------
 def analyze_column():
-    global df, result_df
+    global result_df
 
     if df is None:
         messagebox.showerror("Error", "No data")
         return
 
-    col = combo_analyze.get().strip()
+    col = combo_analyze.get()
     agg = combo_agg.get()
 
     if col not in df.columns:
@@ -163,64 +162,51 @@ def analyze_column():
         })
 
         text.delete(1.0, tk.END)
-        text.insert(tk.END, result_df.to_string())
+        text.insert(tk.END, f"Rows: {len(result_df)}\n\n")
+        text.insert(tk.END, result_df.head(20).to_string())
 
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
 
-# -------- MERGE --------
 def merge_data():
-    global df, df2, result_df
+    global result_df
 
     if df is None or df2 is None:
         messagebox.showerror("Error", "Load both files")
         return
 
-    left_col = combo_merge_left.get().strip()
-    right_col = combo_merge_right.get().strip()
+    left = combo_merge_left.get()
+    right = combo_merge_right.get()
     how = combo_merge_type.get()
 
-    if not left_col or not right_col:
+    if not left or not right:
         messagebox.showerror("Error", "Select columns")
         return
 
     try:
-        result_df = pd.merge(
-            df,
-            df2,
-            left_on=left_col,
-            right_on=right_col,
-            how=how
-        )
+        result_df = pd.merge(df, df2, left_on=left, right_on=right, how=how)
 
         text.delete(1.0, tk.END)
-        text.insert(tk.END, result_df.head().to_string())
+        text.insert(tk.END, f"Rows: {len(result_df)}\n\n")
+        text.insert(tk.END, result_df.head(20).to_string())
 
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
 
-# -------- EXPORT --------
 def export_to_excel():
-    global result_df, df
-
     if result_df is None and df is None:
-        messagebox.showerror("Error", "No data to export")
+        messagebox.showerror("Error", "No data")
         return
 
     path = filedialog.asksaveasfilename(defaultextension=".xlsx")
-
     if not path:
         return
 
     try:
-        if result_df is not None:
-            result_df.to_excel(path)
-        else:
-            df.to_excel(path)
-
-        messagebox.showinfo("Success", "File saved")
+        (result_df if result_df is not None else df).to_excel(path)
+        messagebox.showinfo("Success", "Saved")
 
     except Exception as e:
         messagebox.showerror("Error", str(e))
@@ -228,60 +214,70 @@ def export_to_excel():
 
 # -------- UI --------
 
-frame_top = tk.Frame(app)
+# TOP BAR
+frame_top = ttk.Frame(app)
 frame_top.pack(pady=10)
 
-frame_main = tk.Frame(app)
-frame_main.pack(pady=10)
+label_file1 = tk.Label(app, text="File 1: not loaded", fg="white", bg="#2b2b2b")
+label_file1.pack()
 
-# --- buttons ---
-tk.Button(frame_top, text="Load File 1", command=load_file).pack(side="left", padx=5)
-tk.Button(frame_top, text="Load File 2", command=load_file2).pack(side="left", padx=5)
-tk.Button(frame_top, text="Show Data", command=show_data).pack(side="left", padx=5)
-tk.Button(frame_top, text="Columns", command=show_columns).pack(side="left", padx=5)
+label_file2 = tk.Label(app, text="File 2: not loaded", fg="white", bg="#2b2b2b")
+label_file2.pack()
+ttk.Button(frame_top, text="Load File 1", command=load_file).grid(row=0, column=0, padx=5)
+ttk.Button(frame_top, text="Load File 2", command=load_file2).grid(row=0, column=1, padx=5)
+ttk.Button(frame_top, text="Show Data", command=show_data).grid(row=0, column=2, padx=5)
+ttk.Button(frame_top, text="Columns", command=show_columns).grid(row=0, column=3, padx=5)
 
-# --- comboboxes ---
-combo_index = ttk.Combobox(frame_main, state="readonly")
-combo_columns = ttk.Combobox(frame_main, state="readonly")
-combo_values = ttk.Combobox(frame_main, state="readonly")
-combo_analyze = ttk.Combobox(frame_main, state="readonly")
+# ANALYSIS
+frame_analysis = ttk.LabelFrame(app, text="Analysis")
+frame_analysis.pack(fill="x", padx=10, pady=5)
 
-combo_merge_left = ttk.Combobox(frame_main, state="readonly")
-combo_merge_right = ttk.Combobox(frame_main, state="readonly")
-combo_merge_type = ttk.Combobox(frame_main, state="readonly")
+combo_index = ttk.Combobox(frame_analysis, state="readonly")
+combo_columns = ttk.Combobox(frame_analysis, state="readonly")
+combo_values = ttk.Combobox(frame_analysis, state="readonly")
+combo_analyze = ttk.Combobox(frame_analysis, state="readonly")
+combo_agg = ttk.Combobox(frame_analysis, state="readonly")
 
-combo_agg = ttk.Combobox(frame_main, state="readonly")
 combo_agg['values'] = ["sum", "mean", "count"]
 combo_agg.current(0)
 
-# --- labels + grid ---
-labels = [
-    ("Index", combo_index),
-    ("Columns", combo_columns),
-    ("Values", combo_values),
-    ("Aggregation", combo_agg),
-    ("Analyze Column", combo_analyze),
-    ("Merge Left", combo_merge_left),
-    ("Merge Right", combo_merge_right),
-    ("Merge Type", combo_merge_type),
-]
+labels = ["Index", "Columns", "Values", "Aggregation", "Analyze"]
+widgets = [combo_index, combo_columns, combo_values, combo_agg, combo_analyze]
 
-for i, (text_label, widget) in enumerate(labels):
-    tk.Label(frame_main, text=text_label).grid(row=i, column=0)
-    widget.grid(row=i, column=1)
+for i, (label, widget) in enumerate(zip(labels, widgets)):
+    tk.Label(frame_analysis, text=label).grid(row=i, column=0, padx=5, pady=5)
+    widget.grid(row=i, column=1, padx=5, pady=5)
+
+# MERGE
+frame_merge = ttk.LabelFrame(app, text="Merge")
+frame_merge.pack(fill="x", padx=10, pady=5)
+
+combo_merge_left = ttk.Combobox(frame_merge, state="readonly")
+combo_merge_right = ttk.Combobox(frame_merge, state="readonly")
+combo_merge_type = ttk.Combobox(frame_merge, state="readonly")
 
 combo_merge_type['values'] = ["inner", "left", "right"]
 combo_merge_type.current(0)
 
-# --- actions ---
-tk.Button(app, text="Make Pivot", command=make_pivot).pack(pady=5)
-tk.Button(app, text="Analyze", command=analyze_column).pack(pady=5)
-tk.Button(app, text="Merge Data", command=merge_data).pack(pady=5)
-tk.Button(app, text="Export", command=export_to_excel).pack(pady=5)
+merge_labels = ["Left Column", "Right Column", "Type"]
+merge_widgets = [combo_merge_left, combo_merge_right, combo_merge_type]
 
-# --- output ---
-text = tk.Text(app, height=15)
-text.pack()
+for i, (label, widget) in enumerate(zip(merge_labels, merge_widgets)):
+    tk.Label(frame_merge, text=label).grid(row=i, column=0, padx=5, pady=5)
+    widget.grid(row=i, column=1, padx=5, pady=5)
 
-# -------- START --------
+# ACTIONS
+frame_actions = ttk.Frame(app)
+frame_actions.pack(pady=10)
+
+ttk.Button(frame_actions, text="Pivot", command=make_pivot).grid(row=0, column=0, padx=5)
+ttk.Button(frame_actions, text="Analyze", command=analyze_column).grid(row=0, column=1, padx=5)
+ttk.Button(frame_actions, text="Merge", command=merge_data).grid(row=0, column=2, padx=5)
+ttk.Button(frame_actions, text="Export", command=export_to_excel).grid(row=0, column=3, padx=5)
+
+# OUTPUT
+text = tk.Text(app, bg="#1e1e1e", fg="#00ffcc", font=("Consolas", 10))
+text.pack(fill="both", expand=True, padx=10, pady=10)
+
+# START
 app.mainloop()
