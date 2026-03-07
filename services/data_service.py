@@ -69,3 +69,12 @@ def value_counts(self, df, column):
     result.columns = [column, "count"]
 
     return result
+
+def drop_nulls(self, df):
+
+    return df.dropna()
+
+
+def fill_nulls(self, df, value=0):
+
+    return df.fillna(value)
