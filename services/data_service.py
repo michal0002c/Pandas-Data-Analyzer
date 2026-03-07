@@ -61,3 +61,11 @@ class DataService:
 def sort(self, df, column, ascending=True):
 
     return df.sort_values(by=column, ascending=ascending)
+
+def value_counts(self, df, column):
+
+    result = df[column].value_counts().reset_index()
+
+    result.columns = [column, "count"]
+
+    return result
