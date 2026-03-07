@@ -1,4 +1,4 @@
-    import pandas as pd
+import pandas as pd
 
 
 class DataService:
@@ -46,3 +46,14 @@ class DataService:
 
     def merge(self, df1, df2, left, right, how):
         return pd.merge(df1, df2, left_on=left, right_on=right, how=how)
+    
+    def groupby(self, df, group_col, value_col, agg):
+
+        result = (
+            df
+            .groupby(group_col)[value_col]
+            .agg(agg)
+            .reset_index()
+        )
+
+        return result
