@@ -157,45 +157,67 @@ class DataAnalyzerApp:
 
         data.to_excel(path)
 
-def groupby_data(self):
+    def groupby_data(self):
 
-    if self.df is None:
-        return
+        if self.df is None:
+            return
 
-    col = self.df.columns[0]
-    value = self.df.select_dtypes("number").columns[0]
+        col = self.df.columns[0]
+        value = self.df.select_dtypes("number").columns[0]
 
-    result = self.data_service.groupby(self.df, col, value, "sum")
+        result = self.data_service.groupby(self.df, col, value, "sum")
 
-    self.result_df = result
-    self.table.display(result)
+        self.result_df = result
+        self.table.display(result)
 
-def correlation(self):
+    def correlation(self):
 
-    if self.df is None:
-        return
+        if self.df is None:
+            return
 
-    result = self.data_service.correlation(self.df)
+        result = self.data_service.correlation(self.df)
 
-    self.result_df = result
-    self.table.display(result)
+        self.result_df = result
+        self.table.display(result)
 
-def drop_nulls(self):
+    def drop_nulls(self):
 
-    if self.df is None:
-        return
+        if self.df is None:
+            return
 
-    result = self.data_service.drop_nulls(self.df)
+        result = self.data_service.drop_nulls(self.df)
 
-    self.result_df = result
-    self.table.display(result)
+        self.result_df = result
+        self.table.display(result)
 
-def correlation_plot(self):
+    def correlation_plot(self):
 
-    corr = self.data_service.correlation(self.df)
+        corr = self.data_service.correlation(self.df)
 
-    sns.heatmap(corr, annot=True, cmap="coolwarm")
+        sns.heatmap(corr, annot=True, cmap="coolwarm")
 
-    plt.title("Correlation matrix")
+        plt.title("Correlation matrix")
 
-    plt.show()
+        plt.show()
+    def sort_data(self):
+
+        if self.df is None:
+            return
+
+        col = self.df.columns[0]
+
+        result = self.data_service.sort(self.df, col)
+
+        self.result_df = result
+        self.table.display(result)
+    def value_counts(self):
+
+        if self.df is None:
+            return
+
+        col = self.df.columns[0]
+
+        result = self.data_service.value_counts(self.df, col)
+
+        self.result_df = result
+        self.table.display(result)
