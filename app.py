@@ -155,3 +155,16 @@ class DataAnalyzerApp:
             return
 
         data.to_excel(path)
+
+def groupby_data(self):
+
+    if self.df is None:
+        return
+
+    col = self.df.columns[0]
+    value = self.df.select_dtypes("number").columns[0]
+
+    result = self.data_service.groupby(self.df, col, value, "sum")
+
+    self.result_df = result
+    self.table.display(result)
