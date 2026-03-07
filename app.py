@@ -168,3 +168,13 @@ def groupby_data(self):
 
     self.result_df = result
     self.table.display(result)
+
+def correlation(self):
+
+    if self.df is None:
+        return
+
+    result = self.data_service.correlation(self.df)
+
+    self.result_df = result
+    self.table.display(result)
