@@ -178,3 +178,13 @@ def correlation(self):
 
     self.result_df = result
     self.table.display(result)
+
+def drop_nulls(self):
+
+    if self.df is None:
+        return
+
+    result = self.data_service.drop_nulls(self.df)
+
+    self.result_df = result
+    self.table.display(result)
