@@ -57,3 +57,7 @@ class DataService:
         )
 
         return result
+    
+def sort(self, df, column, ascending=True):
+
+    return df.sort_values(by=column, ascending=ascending)
