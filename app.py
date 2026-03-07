@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import matplotlib.pyplot as plt
 import os
+import seaborn as sns
 
 from services.data_service import DataService
 from ui.table_viewer import TableViewer
@@ -188,3 +189,13 @@ def drop_nulls(self):
 
     self.result_df = result
     self.table.display(result)
+
+def correlation_plot(self):
+
+    corr = self.data_service.correlation(self.df)
+
+    sns.heatmap(corr, annot=True, cmap="coolwarm")
+
+    plt.title("Correlation matrix")
+
+    plt.show()
