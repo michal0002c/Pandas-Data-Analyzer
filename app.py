@@ -56,6 +56,11 @@ class DataAnalyzerApp:
         ttk.Button(left_panel, text="Plot", command=self.plot_column).pack(fill="x", pady=2)
         ttk.Button(left_panel, text="Export", command=self.export_excel).pack(fill="x", pady=2)
 
+        ttk.Button(left_panel, text="GroupBy", command=self.groupby_data).pack(fill="x")
+        ttk.Button(left_panel, text="Sort", command=self.sort_data).pack(fill="x")
+        ttk.Button(left_panel, text="Value Counts", command=self.value_counts).pack(fill="x")
+        ttk.Button(left_panel, text="Correlation", command=self.correlation).pack(fill="x")
+        
         right_panel = ttk.Frame(center)
         right_panel.pack(side="left", fill="both", expand=True)
 
